@@ -6,20 +6,28 @@ function App() {
   const [responseText, setResponseText] = useState("");
 
   const change = (event) => {
-    setInputText(event.target.value);
+    const value = event.target.value;
+    setInputText(value);
+
+    // Clear the result only if the input is completely cleared
+    if (value.trim() === "") {
+      setResponseText("");
+    }
   };
 
-  const submitInput = async () => {
+  const submitInput = async (event) => {
+    event.preventDefault();
+
     try {
       const response = await fetch("/analyse", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ input: inputText }), 
+        body: JSON.stringify({ input: inputText }),
       });
 
-      const data = await response.json(); 
+      const data = await response.json();
       setResponseText(data.result);
     } catch (error) {
       console.error("Error:", error);
@@ -27,25 +35,41 @@ function App() {
   };
 
   const resultMap = {
-    0 : "Negative 👎",
+    0: "Negative 👎",
     1: "Positive 👍"
   };
   const resultText = resultMap[responseText]
 
   return (
-    <div className="App">
-      <h1>Sentiment Analyser</h1>
+    <div className="flex flex-col items-center space-y-6 p-4">
+      <h1 className="text-2xl font-bold text-gray-700">Sentiment Analyser</h1>
 
-      <input
-        type="text"
-        value={inputText}
-        onChange={change} 
-        placeholder="Enter some text"
-      />
+      <form
+        className="flex w-full max-w-sm space-x-3"
+        onSubmit={submitInput} // Attach the event handler here
+      >
+        <input
+          className="flex-1 appearance-none border border-transparent w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-md rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+          type="text"
+          value={inputText}
+          onChange={change}
+          placeholder="Enter some text"
+        />
+        <button
+          className="flex-shrink-0 bg-purple-600 text-white text-base font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-purple-200 transform motion-safe:hover:scale-105"
+          type="submit" // Use type="submit" for the form
+        >
+          Submit
+        </button>
+      </form>
 
-      <button onClick={submitInput}>Submit text input</button>
-
-      {responseText && <p>Sentiment Analysis Result: {resultText}</p>} 
+      {/* Always keep the box, but clear the result text dynamically */}
+      <div className="w-full max-w-sm bg-gray-100 p-4 rounded-lg shadow-md text-center mx-auto">
+        <p className="text-lg font-semibold text-gray-800">
+          Sentiment Analysis Result:
+        </p>
+        <p className="text-xl font-bold text-purple-700">{resultText || "..."}</p>
+      </div>
     </div>
   );
 }
