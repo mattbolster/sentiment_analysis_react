@@ -1,11 +1,13 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from joblib import load
+import os 
 
 app = Flask(__name__)
-CORS(app)
+app.config["SECRET_KEY"] = os.getenv('SECRET_KEY', 'fallback-secret')
 
-
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")  # update this after frontend deploy
+CORS(app, origins=[FRONTEND_URL])
 
 model_path = "tfidf_naive_bayes_model.pkl"
 vectorizer_path = "tfidf_vectorizer.pkl"
@@ -41,4 +43,4 @@ def analyse_input():
         return jsonify({"error": f"Error during prediction: {str(e)}"}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port= int(os.getenv("PORT", 5000)))
